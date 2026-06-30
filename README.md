@@ -25,6 +25,13 @@ WheelPick puts both in one window: grab it, tweak it on the wheel, copy the exac
 - ⚙️ Settings: run at startup, global hotkey, history size, quick-copy format
 - 🪟 Lives in the system tray — click the tray icon to start picking instantly
 
+- <img width="336" height="449" alt="2026-06-30_20-48-20" src="https://github.com/user-attachments/assets/92926814-0688-4eb6-ab32-b03e5f77bc5b" />
+
+<img width="396" height="710" alt="2026-06-30_20-48-53" src="https://github.com/user-attachments/assets/09c5d69f-2062-47b8-b0fb-c808dbfbaa96" />
+
+<img width="396" height="710" alt="2026-06-30_20-48-59" src="https://github.com/user-attachments/assets/df8906d0-5fde-4b80-bd5d-de07edc29c3e" />
+
+
 ## Download
 
 Grab the latest from the [Releases](https://github.com/TINMOON-Label/WheelPick/releases) page:
