@@ -1,0 +1,9 @@
+build/
+dist/
+*.spec
+__pycache__/
+*.py[cod]
+settings.json
+history.json
+err.log
+Output/
