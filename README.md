@@ -19,8 +19,8 @@ Pick any color on screen with the eyedropper, then fine-tune it on the wheel and
 
 Grab the latest from the [**Releases**](../../releases) page:
 
-- **`ColorPicker-Setup.exe`** — installer (adds Start Menu entry, optional startup & desktop icon, clean uninstaller)
-- **`ColorPicker-Portable.zip`** — no install; unzip and run. Settings are saved next to the exe, so the whole folder is portable (USB-friendly).
+- **`WheelPick-Setup.exe`** — installer (adds Start Menu entry, optional startup & desktop icon, clean uninstaller)
+- **`WheelPick-Portable.zip`** — no install; unzip and run. Settings are saved next to the exe, so the whole folder is portable (USB-friendly).
 
 > **SmartScreen note:** the exe isn't code-signed yet, so Windows may show *"Windows protected your PC."* Click **More info → Run anyway**.
 
@@ -43,7 +43,7 @@ python main.py
 Build the standalone exe (PyInstaller):
 
 ```sh
-pyinstaller --onefile --windowed --name ColorPicker --icon app.ico --hidden-import keyboard --hidden-import mss main.py
+pyinstaller --onefile --windowed --name WheelPick --icon app.ico --hidden-import keyboard --hidden-import mss main.py
 ```
 
 ## License

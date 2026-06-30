@@ -3,7 +3,7 @@ import os
 import sys
 import winreg
 
-APP_NAME = 'ColorPicker'
+APP_NAME = 'WheelPick'
 
 
 def _exe_dir() -> str:
@@ -19,7 +19,7 @@ def is_portable() -> bool:
 
 
 def get_data_dir() -> str:
-    """Storage dir: exe folder (portable) or %APPDATA%\\ColorPicker (installed)."""
+    """Storage dir: exe folder (portable) or %APPDATA%\\WheelPick (installed)."""
     if is_portable():
         path = _exe_dir()
     else:

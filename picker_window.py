@@ -57,7 +57,7 @@ class PickerWindow(tk.Toplevel):
         super().__init__(root)
         self.settings = settings
         self.on_hotkey_change = on_hotkey_change
-        self.title('Color Picker')
+        self.title('WheelPick')
         self.configure(bg=BG)
         self.resizable(False, False)
         self.protocol('WM_DELETE_WINDOW', self.withdraw)

@@ -84,7 +84,7 @@ class App:
             pystray.Menu.SEPARATOR,
             pystray.MenuItem('Exit', lambda: self.root.after(0, self._quit)),
         )
-        self._tray = pystray.Icon('ColorPicker', _make_tray_icon(), 'Color Picker', menu)
+        self._tray = pystray.Icon('WheelPick', _make_tray_icon(), 'WheelPick', menu)
 
     # ── Hotkey ───────────────────────────────────────────────────────
 
