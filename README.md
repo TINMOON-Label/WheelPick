@@ -26,7 +26,7 @@ WheelPick puts both in one window: grab it, tweak it on the wheel, copy the exac
 
 ## Download
 
-Grab the latest from the [Releases](https://github.com/blackcometclub/WheelPick/releases) page:
+Grab the latest from the [Releases](https://github.com/TINMOON-Label/WheelPick/releases) page:
 
 - `WheelPick-Setup.exe` — installer (adds Start Menu entry, optional startup & desktop icon, clean uninstaller)
 - `WheelPick-Portable.zip` — no install; unzip and run. Settings are saved next to the exe, so the whole folder is portable (USB-friendly).
@@ -57,7 +57,7 @@ pyinstaller --onefile --windowed --name WheelPick --icon app.ico --hidden-import
 
 ## License
 
-[MIT](https://github.com/blackcometclub/WheelPick/blob/main/LICENSE) — free to use, modify, and distribute.
+[MIT](https://github.com/TINMOON-Label/WheelPick/blob/main/LICENSE) — free to use, modify, and distribute.
 
 ---
 
@@ -74,7 +74,7 @@ Windows のシステムトレイに常駐する、小さなカラーピッカー
 
 AI と一緒に開発していると、色を決める作業がとにかく面倒です。
 *「もう少し青く」「いや、明るすぎ」「やっぱりさっきの方が…」* ——
-気づけば微調整だけで午後がまるごと溶けてる…。
+言葉で伝えようとするほど色は逃げていって、気づけば微調整だけで午後がまるごと溶ける…。
 
 結局、AI に色を正確に伝える唯一の方法は、形容詞ではなく具体的な値（`#2B2B2A`）を渡すことです。でも、画面に映っている色の HEX 値なんて普通は分からないし、そこから「本当に欲しい色」へ寄せていくとなると、たいていツールを2つ行き来する羽目になります。Windows の PowerToys などは優秀なスポイトと履歴を持っていますが、カラーホイールがありません。色相を回したり明度を少し動かすには、別アプリを開くことになる。
 
@@ -91,7 +91,7 @@ WheelPick は、その両方を1つのウィンドウにまとめました。吸
 
 ## ダウンロード
 
-[Releases](https://github.com/blackcometclub/WheelPick/releases) ページから最新版を入手してください。
+[Releases](https://github.com/TINMOON-Label/WheelPick/releases) ページから最新版を入手してください。
 
 - `WheelPick-Setup.exe` — インストーラー（スタートメニュー登録、起動時実行・デスクトップアイコンは任意、アンインストーラー付き）
 - `WheelPick-Portable.zip` — インストール不要。解凍して実行するだけ。設定は exe の隣に保存されるので、フォルダごと持ち運べます（USB でも使えます）。
@@ -122,4 +122,4 @@ pyinstaller --onefile --windowed --name WheelPick --icon app.ico --hidden-import
 
 ## ライセンス
 
-[MIT](https://github.com/blackcometclub/WheelPick/blob/main/LICENSE) — 自由に使用・改変・再配布できます。
+[MIT](https://github.com/TINMOON-Label/WheelPick/blob/main/LICENSE) — 自由に使用・改変・再配布できます。
