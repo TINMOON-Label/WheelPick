@@ -68,7 +68,7 @@ Windows のシステムトレイに常駐する、小さなカラーピッカー
 
 スポイトで画面のどこからでも色を吸い取り、ホイールで微調整して、正確な値をコピーできます。誰かに——あるいは AI に——**「この色にして：`#2B2B2A`」** と、“だいたい” ではなく “正確に” 伝えたいときのための道具です。
 
-<video src="https://github.com/user-attachments/assets/72b9a30c-cc84-4eab-bb71-1de231f942bb" autoplay loop muted playsinline width="400"></video>
+https://github.com/user-attachments/assets/72b9a30c-cc84-4eab-bb71-1de231f942bb"
 
 
 ## なぜ作ったか
