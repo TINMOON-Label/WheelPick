@@ -15,6 +15,13 @@ Pick any color on screen with the eyedropper, then fine-tune it on the wheel and
 - ⚙️ **Settings**: run at startup, global hotkey, history size, quick-copy format
 - 🪟 Lives in the **system tray** — click the tray icon to start picking instantly
 
+
+<img width="396" height="710" alt="2026-06-30_20-48-53" src="https://github.com/user-attachments/assets/3489198c-818d-4201-b1c6-a787f4727d44" />
+
+
+<img width="799" height="698" alt="2026-07-01_10-40-24" src="https://github.com/user-attachments/assets/03f50fb3-6de0-49d4-a245-888e82142758" />
+
+
 ## Download
 
 Grab the latest from the [**Releases**](../../releases) page:
