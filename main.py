@@ -50,9 +50,7 @@ class App:
 
     def show(self):
         w = self._ensure_window()
-        w.deiconify()
-        w.lift()
-        w.focus_force()
+        w.raise_to_front()
 
     def start_picker(self):
         """Start the eyedropper directly from tray click."""
@@ -64,9 +62,7 @@ class App:
         if w.winfo_viewable():
             w.withdraw()
         else:
-            w.deiconify()
-            w.lift()
-            w.focus_force()
+            w.raise_to_front()
 
     # ── Tray ─────────────────────────────────────────────────────────
 

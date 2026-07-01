@@ -36,6 +36,7 @@ DEFAULTS = {
     'hotkey': 'ctrl+shift+c',
     'history_count': 7,
     'quick_copy_format': 'HEX',  # 'HEX', 'RGB', 'HSL', 'None'
+    'always_on_top': False,
 }
 
 
@@ -50,6 +51,9 @@ class Settings:
                 self._data.update(json.load(f))
         except (FileNotFoundError, json.JSONDecodeError):
             pass
+        # Clamp history_count to the supported range (3–20)
+        hc = self._data.get('history_count', 7)
+        self._data['history_count'] = max(3, min(20, hc)) if isinstance(hc, int) else 7
 
     def save(self):
         with open(SETTINGS_FILE, 'w', encoding='utf-8') as f:

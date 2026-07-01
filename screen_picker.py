@@ -1,9 +1,39 @@
 import tkinter as tk
+import ctypes
 from PIL import Image, ImageTk
 import mss
 
 CAPTURE_SIZE = 15   # region to grab around cursor
 MAG_PX = 160        # magnifier canvas size
+
+_user32 = ctypes.windll.user32
+
+# GetSystemMetrics indices for the full virtual desktop (all monitors)
+_SM_XVIRTUALSCREEN = 76
+_SM_YVIRTUALSCREEN = 77
+_SM_CXVIRTUALSCREEN = 78
+_SM_CYVIRTUALSCREEN = 79
+
+
+def _virtual_screen() -> tuple:
+    return (
+        _user32.GetSystemMetrics(_SM_XVIRTUALSCREEN),
+        _user32.GetSystemMetrics(_SM_YVIRTUALSCREEN),
+        _user32.GetSystemMetrics(_SM_CXVIRTUALSCREEN),
+        _user32.GetSystemMetrics(_SM_CYVIRTUALSCREEN),
+    )
+
+
+def _force_above_taskbar(child_hwnd: int, x: int, y: int, w: int, h: int):
+    """Push the overlay above every window, including the always-on-top taskbar."""
+    try:
+        GA_ROOT = 2
+        hwnd = _user32.GetAncestor(child_hwnd, GA_ROOT) or child_hwnd
+        HWND_TOPMOST = -1
+        SWP_SHOWWINDOW = 0x0040
+        _user32.SetWindowPos(hwnd, HWND_TOPMOST, x, y, w, h, SWP_SHOWWINDOW)
+    except Exception:
+        pass
 
 
 class ScreenPicker:
@@ -20,13 +50,17 @@ class ScreenPicker:
     def start(self):
         self._sct = mss.mss()
 
-        # Near-transparent fullscreen overlay to capture mouse events
+        # Near-transparent overlay covering the ENTIRE virtual desktop, forced
+        # above the taskbar so any pixel (taskbar / other topmost apps) is pickable.
+        vx, vy, vw, vh = _virtual_screen()
         self._overlay = tk.Toplevel(self.root)
-        self._overlay.attributes('-fullscreen', True)
+        self._overlay.overrideredirect(True)
         self._overlay.attributes('-alpha', 0.01)
         self._overlay.attributes('-topmost', True)
-        self._overlay.overrideredirect(True)
         self._overlay.config(cursor='crosshair', bg='black')
+        self._overlay.geometry(f'{vw}x{vh}+{vx}+{vy}')
+        self._overlay.update_idletasks()
+        _force_above_taskbar(self._overlay.winfo_id(), vx, vy, vw, vh)
 
         # Magnifier floating window
         self._mag_win = tk.Toplevel(self.root)
@@ -54,8 +88,9 @@ class ScreenPicker:
 
         self._overlay.bind('<Motion>', self._on_motion)
         self._overlay.bind('<Button-1>', self._on_click)
+        self._overlay.bind('<Button-3>', self._cancel)   # right-click cancels
         self._overlay.bind('<Escape>', self._cancel)
-        self._overlay.focus_set()
+        self._overlay.focus_force()
 
     def _pixel_at(self, x: int, y: int) -> tuple:
         mon = {'top': y, 'left': x, 'width': 1, 'height': 1}

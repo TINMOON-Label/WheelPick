@@ -65,19 +65,34 @@ class PickerWindow(tk.Toplevel):
         self._r, self._g, self._b = 100, 100, 100
         self._history: list = []
         self._wheel_open = False
+        self._history_win = None
 
         self._load_history()
         self._build()
         self._update_values()
         self._refresh_history()
+        self._fit_window()
+        self.apply_always_on_top()
 
         # Apply dark title bar + remove minimize after window is fully rendered
         self.bind('<Map>', lambda e: self.after(300, lambda: _apply_dark_titlebar(self.winfo_id())))
 
+    def apply_always_on_top(self):
+        self.attributes('-topmost', bool(self.settings.always_on_top))
+
+    def raise_to_front(self):
+        """Reliably bring the window above others (Windows steals focus otherwise)."""
+        self.deiconify()
+        self.attributes('-topmost', True)
+        self.lift()
+        self.focus_force()
+        # Drop back to the user's preferred topmost state shortly after
+        self.after(150, self.apply_always_on_top)
+
     # ── Build UI ────────────────────────────────────────────────────
 
     def _build(self):
-        # ── Controls bar ──────────────────────────────────────────
+        # ── Controls bar: Pick + recent swatches + gear, one clean row ──
         top = tk.Frame(self, bg=BG, padx=8, pady=7)
         top.pack(fill='x')
 
@@ -91,6 +106,22 @@ class PickerWindow(tk.Toplevel):
 
         self._hist_frame = tk.Frame(top, bg=BG)
         self._hist_frame.pack(side='left', padx=(8, 0))
+
+        # Persistent swatch pool + ▸ button — reused on refresh (no flicker)
+        self._hist_btns = []
+        self._hist_tips = []
+        for _ in range(self.MAIN_SWATCHES):
+            b = tk.Button(self._hist_frame, width=2, height=1, relief='flat',
+                          cursor='hand2', bg=BG2, activebackground=BG2)
+            self._hist_btns.append(b)
+            self._hist_tips.append(_Tooltip(b, ''))
+        self._more_btn = tk.Button(
+            self._hist_frame, text='▸', bg=BG2, fg=FG,
+            font=('Segoe UI', 10), relief='flat', width=2, height=1,
+            activebackground=BG3, activeforeground=FG,
+            cursor='hand2', command=self._open_history
+        )
+        _Tooltip(self._more_btn, 'Show all history')
 
         self._gear_btn = tk.Button(
             top, text='⚙', bg=BG, fg=FG2,
@@ -145,32 +176,32 @@ class PickerWindow(tk.Toplevel):
         self._wheel = ColorWheel(self._wheel_frame, on_color_change=self._on_wheel_color)
         self._wheel.pack()
 
+        self._fit_window()
+
+    def _fit_window(self):
+        """Resize height to fit content; width stays fixed."""
         self.update_idletasks()
         self.geometry(f'{WINDOW_WIDTH}x{self.winfo_reqheight()}')
 
     # ── History ─────────────────────────────────────────────────────
 
+    MAIN_SWATCHES = 6  # recent colors shown inline; rest live in the History window
+
     def _refresh_history(self):
-        for w in self._hist_frame.winfo_children():
-            w.destroy()
-        count = self.settings.history_count or 7
-        items = list(reversed(self._history[-count:]))
-        for i in range(count):
-            if i < len(items):
-                r, g, b = items[i]
-                color = f'#{r:02X}{g:02X}{b:02X}'
-                btn = tk.Button(
-                    self._hist_frame, bg=color, width=2, height=1,
-                    relief='flat', cursor='hand2', activebackground=color,
-                    command=lambda c=(r, g, b): self._set_color(*c)
-                )
-                _Tooltip(btn, color)
-            else:
-                btn = tk.Button(
-                    self._hist_frame, bg=BG3, width=2, height=1,
-                    relief='flat', state='disabled'
-                )
+        recent = list(reversed(self._history))[:self.MAIN_SWATCHES]
+        # Reuse the persistent widgets — only reconfigure colors, never destroy.
+        for btn in self._hist_btns:
+            btn.pack_forget()
+        self._more_btn.pack_forget()
+        for i, (r, g, b) in enumerate(recent):
+            color = f'#{r:02X}{g:02X}{b:02X}'
+            btn = self._hist_btns[i]
+            btn.configure(bg=color, activebackground=color,
+                          command=lambda c=(r, g, b): self._set_color(*c))
+            self._hist_tips[i]._text = color
             btn.pack(side='left', padx=2)
+        self._more_btn.pack(side='left', padx=2)
+        self._sync_history_window()
 
     def _add_history(self, r: int, g: int, b: int):
         entry = (r, g, b)
@@ -223,8 +254,7 @@ class PickerWindow(tk.Toplevel):
         self.after(200, lambda: ScreenPicker(self, self._on_picked).start())
 
     def _on_picked(self, r: int, g: int, b: int):
-        self.deiconify()
-        self.lift()
+        self.raise_to_front()
         self._set_color(r, g, b)
         fmt = self.settings.quick_copy_format
         if fmt and fmt != 'None':
@@ -241,8 +271,22 @@ class PickerWindow(tk.Toplevel):
         else:
             self._wheel_frame.pack_forget()
             self._toggle_btn.config(text='▼')
-        self.update_idletasks()
-        self.geometry(f'{WINDOW_WIDTH}x{self.winfo_reqheight()}')
+        self._fit_window()
+
+    # ── History window ────────────────────────────────────────────────
+
+    def _open_history(self):
+        if self._history_win is not None and self._history_win.winfo_exists():
+            self._history_win.refresh(self._history)
+            self._history_win.deiconify()
+            self._history_win.lift()
+            self._history_win.focus_force()
+            return
+        self._history_win = HistoryWindow(self, self._history, self._set_color)
+
+    def _sync_history_window(self):
+        if self._history_win is not None and self._history_win.winfo_exists():
+            self._history_win.refresh(self._history)
 
     # ── Clipboard ────────────────────────────────────────────────────
 
@@ -260,6 +304,8 @@ class PickerWindow(tk.Toplevel):
         max_h = self.settings.history_count or 7
         self._history = self._history[-max_h:]
         self._refresh_history()
+        self._fit_window()
+        self.apply_always_on_top()
         if hotkey_changed and self.on_hotkey_change:
             self.on_hotkey_change()
 
@@ -287,6 +333,84 @@ class _Tooltip:
         if self._tip:
             self._tip.destroy()
             self._tip = None
+
+
+# ── History window ────────────────────────────────────────────────────
+
+class HistoryWindow(tk.Toplevel):
+    COLS = 5  # swatches per row
+
+    def __init__(self, parent, history, on_pick):
+        super().__init__(parent)
+        self.title('History')
+        self.configure(bg=BG)
+        self.resizable(False, False)
+        self._on_pick = on_pick
+        self._count_var = tk.StringVar()
+        self._cells = []          # reused {frame, sw, lbl} widgets
+        self._empty_lbl = None
+
+        head = tk.Frame(self, bg=BG)
+        head.pack(fill='x', padx=16, pady=(14, 8))
+        tk.Label(head, text='History', bg=BG, fg=FG,
+                 font=('Segoe UI', 12, 'bold')).pack(side='left')
+        tk.Label(head, textvariable=self._count_var, bg=BG, fg=FG2,
+                 font=('Segoe UI', 10)).pack(side='right')
+        tk.Frame(self, bg=SEP, height=1).pack(fill='x')
+        self._body = tk.Frame(self, bg=BG, padx=14, pady=12)
+        self._body.pack()
+
+        self.refresh(history)
+        self.update_idletasks()
+        # Open just to the right of the main window
+        px = parent.winfo_x() + parent.winfo_width() + 8
+        py = parent.winfo_y()
+        self.geometry(f'+{px}+{py}')
+        self.bind('<Map>', lambda e: self.after(10, lambda: _apply_dark_titlebar(self.winfo_id())))
+
+    def _make_cell(self):
+        frame = tk.Frame(self._body, bg=BG)
+        sw = tk.Button(frame, bg=BG, activebackground=BG, width=5, height=2,
+                       relief='flat', cursor='hand2')
+        sw.pack()
+        lbl = tk.Label(frame, bg=BG, fg=FG2, font=('Consolas', 8))
+        lbl.pack(pady=(4, 0))
+        cell = {'frame': frame, 'sw': sw, 'lbl': lbl}
+        self._cells.append(cell)
+        return cell
+
+    def refresh(self, history):
+        """Update the swatch grid in place — reuses widgets so there's no flicker."""
+        items = list(reversed(history))
+        self._count_var.set(str(len(items)))
+
+        if not items:
+            for c in self._cells:
+                c['frame'].grid_remove()
+            if self._empty_lbl is None:
+                self._empty_lbl = tk.Label(self._body, text='No colors yet',
+                                           bg=BG, fg=FG2, font=FONT)
+                self._empty_lbl.grid(padx=30, pady=24)
+            return
+        if self._empty_lbl is not None:
+            self._empty_lbl.destroy()
+            self._empty_lbl = None
+
+        while len(self._cells) < len(items):
+            self._make_cell()
+
+        for i, (r, g, b) in enumerate(items):
+            color = f'#{r:02X}{g:02X}{b:02X}'
+            c = self._cells[i]
+            c['sw'].configure(bg=color, activebackground=color,
+                              command=lambda cc=(r, g, b): self._pick(cc))
+            c['lbl'].configure(text=color)
+            c['frame'].grid(row=i // self.COLS, column=i % self.COLS, padx=6, pady=6)
+        for j in range(len(items), len(self._cells)):
+            self._cells[j]['frame'].grid_remove()
+
+    def _pick(self, c):
+        self._on_pick(*c)  # keep window open so users can keep browsing/tweaking
 
 
 # ── Settings dialog ──────────────────────────────────────────────────
@@ -359,6 +483,14 @@ class SettingsDialog(tk.Toplevel):
             tk.Radiobutton(fmt_row, text=fmt, variable=self._qcopy_var, value=fmt,
                            bg=BG, fg=FG, selectcolor=BG3, activebackground=BG,
                            cursor='hand2').pack(side='left', padx=(0, 10))
+        row += 1
+
+        # Always on top
+        self._ontop_var = tk.BooleanVar(value=bool(self.settings.always_on_top))
+        label('Always on top').grid(row=row, column=0, sticky='w', pady=8)
+        tk.Checkbutton(body, variable=self._ontop_var, bg=BG, activebackground=BG,
+                       fg=FG, selectcolor=BG3, cursor='hand2').grid(
+            row=row, column=1, sticky='w', padx=(14, 0))
 
         # Buttons
         tk.Frame(self, bg=SEP, height=1).pack(fill='x')
@@ -383,6 +515,7 @@ class SettingsDialog(tk.Toplevel):
         self.settings.hotkey = new_hotkey
         self.settings.history_count = self._hist_var.get()
         self.settings.quick_copy_format = self._qcopy_var.get()
+        self.settings.always_on_top = self._ontop_var.get()
         self.settings.save()
 
         hotkey_changed = old_hotkey != new_hotkey
